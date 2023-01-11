@@ -51,7 +51,10 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  */
 
 router.get("/", async function (req, res, next) {
-  const companies = await Company.findAll();
+  const { minEmployees, maxEmployees, nameLike } = req.query
+
+  const companies = await Company.findAll({
+    minEmployees, maxEmployees, nameLike });
   return res.json({ companies });
 });
 
