@@ -40,6 +40,12 @@ function ensureLoggedIn(req, res, next) {
     return next();
 }
 
+// function ensureAdminLoggedIn(req, res, next) {
+//   const user = res.locals.user;
+//   // if (!user || !user.isAdmin) throw new UnauthorizedError();
+
+// }
+
 
 module.exports = {
   authenticateJWT,

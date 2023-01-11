@@ -1,7 +1,7 @@
 "use strict";
 
 const { BadRequestError } = require("../expressError");
-const { sqlForPartialUpdate } = require("./sql");
+const { sqlForPartialUpdate, formatWhereCmds } = require("./sql");
 
 const jsToSql = {
   numEmployees: "num_employees",
@@ -52,5 +52,29 @@ describe("sqlForPartialUpdate", function () {
     } catch (err) {
       expect(err instanceof BadRequestError).toBeTruthy();
     }
+  });
+});
+
+describe("formatWhereCmds", function () {
+  test("works: returns valid object with all 3 filter parameters", function () {
+    const results = formatWhereCmds({
+      nameLike: "test",
+      minEmployees: 1,
+      maxEmployees: 2,
+    });
+
+    expect(results).toEqual({
+      sqlCmd: "name ILIKE $1 AND num_employees >= $2 AND num_employees <= $3",
+      values: ["%test%", 1, 2],
+    });
+  });
+
+  test("returns empty array for values and empty string for sqlCmds", function () {
+    const results = formatWhereCmds({});
+
+    expect(results).toEqual({
+      sqlCmd: "",
+      values: [],
+    });
   });
 });

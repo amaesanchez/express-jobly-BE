@@ -62,7 +62,7 @@ function formatWhereCmds(filters) {
   const sqlCmd = conditions.join(" AND ");
 
   return {
-    sqlCmd, // "WHERE name ILIKE $1 AND num_employees <= $2, AND num_employees >= $3"
+    sqlCmd, // "name ILIKE $1 AND num_employees <= $2, AND num_employees >= $3"
     values, // ['%and'%, 400, 800]
   };
 }

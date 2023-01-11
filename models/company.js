@@ -64,14 +64,6 @@ class Company {
     FROM companies
     ${where}${sqlCmd}
     ORDER BY name`;
-    console.log(
-      "🚀 ~ file: company.js:67 ~ Company ~ findAll ~ querySql",
-      querySql
-    );
-    console.log(
-      "🚀 ~ file: company.js:57 ~ Company ~ findAll ~ conditions",
-      values
-    );
 
     const companiesRes = await db.query(querySql, values);
 
