@@ -41,57 +41,31 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
  * */
 function formatWhereCmds(filters) {
   const conditions = [];
-  let and = "";
-  let where = "WHERE ";
-
+  const values = [];
   for (const filter in filters) {
-    if (conditions.length > 0) {
-      and = "AND ";
-      where = "";
-    }
+    const value = filters[filter];
 
-    const criteria = filters[filter];
-
-    if (criteria) {
+    if (value) {
       if (filter === "nameLike") {
-        conditions.push(`${where}${and}name ILIKE '%${criteria}%'`);
+        conditions.push(`name ILIKE $${conditions.length + 1}`);
+        values.push(`%${value}%`);
       } else if (filter === "minEmployees") {
-        conditions.push(`${where}${and}num_employees >= ${criteria}`);
+        conditions.push(`num_employees >= $${conditions.length + 1}`);
+        values.push(value);
       } else if (filter === "maxEmployees") {
-        conditions.push(`${where}${and}num_employees <= ${criteria}`);
+        conditions.push(`num_employees <= $${conditions.length + 1}`);
+        values.push(value);
       }
     }
   }
 
-  // WHERE name ILIKE '%and%' AND minEmployees >= 400 AND maxEmployees <= 800
-  // WHERE name ILIKE $1 AND minEmployees >= $2 AND maxEmployees <= $3
-
-  const sqlIdx = conditions.map((c, idx) => `$${idx + 1}`).join(" ");
+  const sqlCmd = conditions.join(" AND ");
 
   return {
-    conditions,
-    sqlIdx,
+    sqlCmd, // "WHERE name ILIKE $1 AND num_employees <= $2, AND num_employees >= $3"
+    values, // ['%and'%, 400, 800]
   };
 }
-
-// function formatWhereCmds({ nameLike, minEmployees, maxEmployees }) {
-//   if (minEmployees > maxEmployees) throw new BadRequestError(
-//     "minEmployees cannot be greater than maxEmployees");
-
-//   let conditions = [];
-
-//   if (nameLike) {
-//     conditions.push(`name ILIKE '%${nameLike}%'`);
-//   }
-//   if (minEmployees) {
-//     conditions.push(`num_employees >= ${minEmployees}`);
-//   }
-//   if (maxEmployees) {
-//     conditions.push(`num_employees <= ${maxEmployees}`);
-//   }
-
-//   return conditions.join(" AND ");
-// }
 
 module.exports = {
   sqlForPartialUpdate,

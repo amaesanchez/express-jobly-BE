@@ -51,7 +51,9 @@ class Company {
    * */
 
   static async findAll(filters) {
-    const { conditions, sqlIdx } = formatWhereCmds(filters);
+    let where = '';
+    const { sqlCmd, values } = formatWhereCmds(filters);
+    if (sqlCmd) where = 'WHERE '
 
     const querySql = `
     SELECT handle,
@@ -60,12 +62,18 @@ class Company {
           num_employees AS "numEmployees",
           logo_url AS "logoUrl"
     FROM companies
-    ${sqlIdx}
+    ${where}${sqlCmd}
     ORDER BY name`;
-    console.log("🚀 ~ file: company.js:67 ~ Company ~ findAll ~ querySql", querySql)
-    console.log("🚀 ~ file: company.js:57 ~ Company ~ findAll ~ conditions", conditions)
+    console.log(
+      "🚀 ~ file: company.js:67 ~ Company ~ findAll ~ querySql",
+      querySql
+    );
+    console.log(
+      "🚀 ~ file: company.js:57 ~ Company ~ findAll ~ conditions",
+      values
+    );
 
-    const companiesRes = await db.query(querySql, conditions);
+    const companiesRes = await db.query(querySql, values);
 
     return companiesRes.rows;
 
