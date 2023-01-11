@@ -32,7 +32,6 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   };
 }
 
-
 /** Given an object with optional keys labeled nameLike,
  * minEmployees, and/or maxEmployees
  *
@@ -40,27 +39,61 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
  *  - creates an array of WHERE conditions
  *  - Returns string of array joined by " AND "
  * */
+function formatWhereCmds(filters) {
+  const conditions = [];
+  let and = "";
+  let where = "WHERE ";
 
-function formatWhereCmds({ nameLike, minEmployees, maxEmployees }) {
-  if (minEmployees > maxEmployees) throw new BadRequestError(
-    "minEmployees cannot be greater than maxEmployees");
+  for (const filter in filters) {
+    if (conditions.length > 0) {
+      and = "AND ";
+      where = "";
+    }
 
-  let conditions = [];
+    const criteria = filters[filter];
 
-  if (nameLike) {
-    conditions.push(`name ILIKE '%${nameLike}%'`);
+    if (criteria) {
+      if (filter === "nameLike") {
+        conditions.push(`${where}${and}name ILIKE '%${criteria}%'`);
+      } else if (filter === "minEmployees") {
+        conditions.push(`${where}${and}num_employees >= ${criteria}`);
+      } else if (filter === "maxEmployees") {
+        conditions.push(`${where}${and}num_employees <= ${criteria}`);
+      }
+    }
   }
-  if (minEmployees) {
-    conditions.push(`num_employees >= ${minEmployees}`);
-  }
-  if (maxEmployees) {
-    conditions.push(`num_employees <= ${maxEmployees}`);
-  }
 
-  return conditions.join(" AND ");
+  // WHERE name ILIKE '%and%' AND minEmployees >= 400 AND maxEmployees <= 800
+  // WHERE name ILIKE $1 AND minEmployees >= $2 AND maxEmployees <= $3
+
+  const sqlIdx = conditions.map((c, idx) => `$${idx + 1}`).join(" ");
+
+  return {
+    conditions,
+    sqlIdx,
+  };
 }
+
+// function formatWhereCmds({ nameLike, minEmployees, maxEmployees }) {
+//   if (minEmployees > maxEmployees) throw new BadRequestError(
+//     "minEmployees cannot be greater than maxEmployees");
+
+//   let conditions = [];
+
+//   if (nameLike) {
+//     conditions.push(`name ILIKE '%${nameLike}%'`);
+//   }
+//   if (minEmployees) {
+//     conditions.push(`num_employees >= ${minEmployees}`);
+//   }
+//   if (maxEmployees) {
+//     conditions.push(`num_employees <= ${maxEmployees}`);
+//   }
+
+//   return conditions.join(" AND ");
+// }
 
 module.exports = {
   sqlForPartialUpdate,
-  formatWhereCmds
+  formatWhereCmds,
 };

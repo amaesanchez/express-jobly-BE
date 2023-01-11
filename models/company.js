@@ -50,26 +50,44 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll({ nameLike, minEmployees, maxEmployees }) {
-    let whereCmds;
-    const conditions = formatWhereCmds({ nameLike, minEmployees, maxEmployees });
+  static async findAll(filters) {
+    const { conditions, sqlIdx } = formatWhereCmds(filters);
 
-    if (conditions) {
-      whereCmds = "WHERE " + conditions;
-    }
+    const querySql = `
+    SELECT handle,
+          name,
+          description,
+          num_employees AS "numEmployees",
+          logo_url AS "logoUrl"
+    FROM companies
+    ${sqlIdx}
+    ORDER BY name`;
+    console.log("🚀 ~ file: company.js:67 ~ Company ~ findAll ~ querySql", querySql)
+    console.log("🚀 ~ file: company.js:57 ~ Company ~ findAll ~ conditions", conditions)
 
-    // console.log("whereCmds", whereCmds);
-    const companiesRes = await db.query(
-      `SELECT handle,
-                name,
-                description,
-                num_employees AS "numEmployees",
-                logo_url AS "logoUrl"
-          FROM companies
-          ${whereCmds}
-          ORDER BY name`
-    );
+    const companiesRes = await db.query(querySql, conditions);
+
     return companiesRes.rows;
+
+    // let whereCmds;
+    // const conditions = formatWhereCmds({ nameLike, minEmployees, maxEmployees });
+
+    // if (conditions) {
+    //   whereCmds = "WHERE " + conditions;
+    // }
+
+    // // console.log("whereCmds", whereCmds);
+    // const companiesRes = await db.query(
+    //   `SELECT handle,
+    //             name,
+    //             description,
+    //             num_employees AS "numEmployees",
+    //             logo_url AS "logoUrl"
+    //       FROM companies
+    //       ${whereCmds}
+    //       ORDER BY name`
+    // );
+    // return companiesRes.rows;
   }
 
   /** Given a company handle, return data about company.
