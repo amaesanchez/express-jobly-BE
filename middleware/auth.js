@@ -14,9 +14,11 @@ const { UnauthorizedError } = require("../expressError");
  *
  * It's not an error if no token was provided or if the token is not valid.
  */
-
+// in insomnia
+  // authorization : Bearer [token]
 function authenticateJWT(req, res, next) {
   try {
+    // && - short circuiting
     const authHeader = req.headers && req.headers.authorization;
     if (authHeader) {
       const token = authHeader.replace(/^[Bb]earer /, "").trim();

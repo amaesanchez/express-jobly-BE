@@ -44,19 +44,21 @@ class Company {
     return company;
   }
 
-  /** Find all companies.
+  /** Find all companies. Can be provided optional filtering parameters
+   * (nameLike, minEmployees, maxEmployees).
    *
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
   static async findAll({ nameLike, minEmployees, maxEmployees }) {
     let whereCmds;
-    if (formatWhereCmds({ nameLike, minEmployees, maxEmployees })) {
-      whereCmds = "WHERE " + formatWhereCmds({
-        nameLike, minEmployees, maxEmployees })
+    const conditions = formatWhereCmds({ nameLike, minEmployees, maxEmployees });
+
+    if (conditions) {
+      whereCmds = "WHERE " + conditions;
     }
 
-    console.log("whereCmds", whereCmds)
+    // console.log("whereCmds", whereCmds);
     const companiesRes = await db.query(
       `SELECT handle,
                 name,

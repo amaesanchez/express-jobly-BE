@@ -50,6 +50,7 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  * Authorization required: none
  */
 
+//implement jsonschema
 router.get("/", async function (req, res, next) {
   const { minEmployees, maxEmployees, nameLike } = req.query
 
