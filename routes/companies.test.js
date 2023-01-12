@@ -12,7 +12,7 @@ const {
   commonAfterEach,
   commonAfterAll,
   u1Token,
-  adminToken
+  adminToken,
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -49,10 +49,10 @@ describe("POST /companies", function () {
       .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(401);
     expect(resp.body).toEqual({
-      "error": {
-        "message": "Unauthorized",
-        "status": 401
-      }
+      error: {
+        message: "Unauthorized",
+        status: 401,
+      },
     });
   });
 
@@ -219,10 +219,10 @@ describe("PATCH /companies/:handle", function () {
       })
       .set("authorization", `Bearer ${u1Token}`);
     expect(resp.body).toEqual({
-      "error": {
-        "message": "Unauthorized",
-        "status": 401
-      }
+      error: {
+        message: "Unauthorized",
+        status: 401,
+      },
     });
     expect(resp.statusCode).toEqual(401);
   });
@@ -280,10 +280,10 @@ describe("DELETE /companies/:handle", function () {
       .delete(`/companies/c1`)
       .set("authorization", `Bearer ${u1Token}`);
     expect(resp.body).toEqual({
-      "error": {
-        "message": "Unauthorized",
-        "status": 401
-      }
+      error: {
+        message: "Unauthorized",
+        status: 401,
+      },
     });
     expect(resp.statusCode).toEqual(401);
   });

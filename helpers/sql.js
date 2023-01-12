@@ -7,7 +7,7 @@ const { BadRequestError } = require("../expressError");
  *    their index (one-indexed)
  *    - key names are converted to snake_case via jsToSql object if needed
  *
- *  - Returns an object with setCols and values keys, which represent the joined
+ *  Returns an object with setCols and values keys, which represent the joined
  *    keys array (cols) as a string separated by commas,
  *    and the values from the JSON data to update, respectively
  *
@@ -32,38 +32,43 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   };
 }
 
-/** Given an object with optional keys labeled nameLike,
- * minEmployees, and/or maxEmployees
+/** Given an object with optional filters as keys:
+ *    nameLike, minEmployees, maxEmployees
  *
- *  - throws BadRequestError if minEmployees is greater than maxEmployees
- *  - creates an array of WHERE conditions
- *  - Returns string of array joined by " AND "
+ *  Returns an object with keys:
+ *    sqlCmd: str with parameterized sql query
+ *    values: arr with values of filters passed in
+ *
+ *  - ex: {nameLike: 'and', minEmployees: 400, maxEmployees: 800} => {
+ *    sqlCmd: "name ILIKE $1 AND num_employees <= $2, AND num_employees >= $3"
+ *    values: ['%and%', 400, 800]
+ *    }
  * */
+
 function formatWhereCmds(filters) {
   const conditions = [];
   const values = [];
   for (const filter in filters) {
     const value = filters[filter];
 
-    if (value) {
-      if (filter === "nameLike") {
-        conditions.push(`name ILIKE $${conditions.length + 1}`);
-        values.push(`%${value}%`);
-      } else if (filter === "minEmployees") {
-        conditions.push(`num_employees >= $${conditions.length + 1}`);
-        values.push(value);
-      } else if (filter === "maxEmployees") {
-        conditions.push(`num_employees <= $${conditions.length + 1}`);
-        values.push(value);
-      }
+    if (filter === "nameLike") {
+      conditions.push(`name ILIKE $${conditions.length + 1}`);
+      values.push(`%${value}%`);
+    } else if (filter === "minEmployees") {
+      conditions.push(`num_employees >= $${conditions.length + 1}`);
+      values.push(value);
+    } else {
+      // if (filter === "maxEmployees")
+      conditions.push(`num_employees <= $${conditions.length + 1}`);
+      values.push(value);
     }
   }
 
   const sqlCmd = conditions.join(" AND ");
 
   return {
-    sqlCmd, // "name ILIKE $1 AND num_employees <= $2, AND num_employees >= $3"
-    values, // ['%and'%, 400, 800]
+    sqlCmd,
+    values,
   };
 }
 

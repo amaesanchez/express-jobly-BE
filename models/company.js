@@ -51,11 +51,12 @@ class Company {
    * */
 
   static async findAll(filters) {
-    if(filters?.minEmployees > filters?.maxEmployees) throw new BadRequestError();
+    if (filters?.minEmployees > filters?.maxEmployees)
+      throw new BadRequestError();
 
-    let where = '';
+    let where = "";
     const { sqlCmd, values } = formatWhereCmds(filters);
-    if (sqlCmd) where = 'WHERE '
+    if (sqlCmd) where = "WHERE ";
 
     const querySql = `
     SELECT handle,
@@ -65,31 +66,12 @@ class Company {
           logo_url AS "logoUrl"
     FROM companies
     ${where}${sqlCmd}
-    ORDER BY name`;
+    ORDER BY name
+    `;
 
     const companiesRes = await db.query(querySql, values);
 
     return companiesRes.rows;
-
-    // let whereCmds;
-    // const conditions = formatWhereCmds({ nameLike, minEmployees, maxEmployees });
-
-    // if (conditions) {
-    //   whereCmds = "WHERE " + conditions;
-    // }
-
-    // // console.log("whereCmds", whereCmds);
-    // const companiesRes = await db.query(
-    //   `SELECT handle,
-    //             name,
-    //             description,
-    //             num_employees AS "numEmployees",
-    //             logo_url AS "logoUrl"
-    //       FROM companies
-    //       ${whereCmds}
-    //       ORDER BY name`
-    // );
-    // return companiesRes.rows;
   }
 
   /** Given a company handle, return data about company.

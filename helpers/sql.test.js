@@ -69,6 +69,17 @@ describe("formatWhereCmds", function () {
     });
   });
 
+  test("works: returns valid object with 1 filter parameter", function () {
+    const results = formatWhereCmds({
+      maxEmployees: 2,
+    });
+
+    expect(results).toEqual({
+      sqlCmd: "num_employees <= $1",
+      values: [2],
+    });
+  });
+
   test("returns empty array for values and empty string for sqlCmds", function () {
     const results = formatWhereCmds({});
 

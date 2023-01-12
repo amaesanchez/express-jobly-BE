@@ -13,11 +13,9 @@ const { UnauthorizedError } = require("../expressError");
  *
  * It's not an error if no token was provided or if the token is not valid.
  */
-// in insomnia
-// authorization : Bearer [token]
+
 function authenticateJWT(req, res, next) {
   try {
-    // && - short circuiting
     const authHeader = req.headers && req.headers.authorization;
     if (authHeader) {
       const token = authHeader.replace(/^[Bb]earer /, "").trim();
@@ -42,7 +40,7 @@ function ensureLoggedIn(req, res, next) {
 /** Middleware to use when admin must be logged in
  *
  * If not, raises Unauthorized.
-*/
+ */
 function ensureAdminLoggedIn(req, res, next) {
   const user = res.locals.user;
   if (!user || !user.isAdmin) throw new UnauthorizedError();
@@ -53,14 +51,19 @@ function ensureAdminLoggedIn(req, res, next) {
  * accessed, or current user is the admin
  *
  * If not, raises Unauthorized.
-*/
+ */
 function ensureCurrUserOrAdmin(req, res, next) {
   const user = res.locals.user;
 
-  if (user?.isAdmin || user?.username === req.params?.username) {
-    return next();
-  }
-  throw new UnauthorizedError();
+  if (!user) throw new UnauthorizedError();
+  if (!user.isAdmin && user.username !== req.params.username)
+    throw new UnauthorizedError();
+
+  // FIXME: worth writing 1 liner? took me awhile to write it
+  // if (!user || (!user.isAdmin && user.username !== req.params.username))
+  //   throw new UnauthorizedError();
+
+  return next();
 }
 
 module.exports = {

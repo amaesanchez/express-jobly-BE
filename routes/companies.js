@@ -50,12 +50,14 @@ router.post("/", ensureAdminLoggedIn, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   const lintedQuery = req.query;
+
   if (lintedQuery.minEmployees) {
     lintedQuery.minEmployees = Number(lintedQuery.minEmployees);
   }
   if (lintedQuery.maxEmployees) {
     lintedQuery.maxEmployees = Number(lintedQuery.maxEmployees);
   }
+
   const validator = jsonschema.validate(lintedQuery, companyFilter, {
     require: true,
   });
@@ -90,7 +92,7 @@ router.get("/:handle", async function (req, res, next) {
  *
  * Returns { handle, name, description, numEmployees, logo_url }
  *
- * Authorization required: login
+ * Authorization required: admin
  */
 
 router.patch("/:handle", ensureAdminLoggedIn, async function (req, res, next) {
@@ -108,7 +110,7 @@ router.patch("/:handle", ensureAdminLoggedIn, async function (req, res, next) {
 
 /** DELETE /[handle]  =>  { deleted: handle }
  *
- * Authorization: login
+ * Authorization: admin
  */
 
 router.delete("/:handle", ensureAdminLoggedIn, async function (req, res, next) {
