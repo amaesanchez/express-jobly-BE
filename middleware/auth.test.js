@@ -59,3 +59,5 @@ describe("ensureLoggedIn", function () {
     expect(() => ensureLoggedIn(req, res, next)).toThrowError();
   });
 });
+
+// TODO: add tests for ensureCurrUserOrAdmin and ensureAdminLoggedIn

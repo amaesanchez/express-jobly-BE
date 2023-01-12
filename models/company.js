@@ -51,6 +51,8 @@ class Company {
    * */
 
   static async findAll(filters) {
+    if(filters?.minEmployees > filters?.maxEmployees) throw new BadRequestError();
+
     let where = '';
     const { sqlCmd, values } = formatWhereCmds(filters);
     if (sqlCmd) where = 'WHERE '
