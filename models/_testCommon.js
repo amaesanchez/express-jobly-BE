@@ -59,20 +59,10 @@ async function commonAfterAll() {
   await db.end();
 }
 
-async function getJobIds() {
-  const results = await db.query(`
-    SELECT id
-    FROM jobs
-  `)
-
-  return results.rows;
-}
-
 module.exports = {
   commonBeforeAll,
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
-  getJobIds,
   testJobIds
 };
