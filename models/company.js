@@ -53,10 +53,7 @@ class Company {
   static async findAll(filters) {
     if (filters?.minEmployees > filters?.maxEmployees)
       throw new BadRequestError();
-
-    let where = "";
-    const { sqlCmd, values } = formatWhereCmds(filters);
-    if (sqlCmd) where = "WHERE ";
+    const { sqlCmd, values } = this.formatWhereCmds(filters);
 
     const querySql = `
     SELECT handle,
@@ -65,7 +62,7 @@ class Company {
           num_employees AS "numEmployees",
           logo_url AS "logoUrl"
     FROM companies
-    ${where}${sqlCmd}
+    ${sqlCmd ? sqlCmd : ""}
     ORDER BY name
     `;
 
@@ -149,6 +146,52 @@ class Company {
     const company = result.rows[0];
 
     if (!company) throw new NotFoundError(`No company: ${handle}`);
+  }
+
+  /** Given an object with optional filters as keys:
+   *    nameLike, minEmployees, maxEmployees
+   *
+   *  Returns an object with keys:
+   *    sqlCmd: str with parameterized sql query
+   *    values: arr with values of filters passed in
+   *
+   *  - ex: {nameLike: 'and', minEmployees: 400, maxEmployees: 800} => {
+   *    sqlCmd: "name ILIKE $1 AND num_employees <= $2, AND num_employees >= $3"
+   *    values: ['%and%', 400, 800]
+   *    }
+   * */
+
+  static formatWhereCmds(filters) {
+    if (Object.keys(filters).length === 0)
+      return {
+        sqlCmd: null,
+        values: null,
+      };
+
+    const conditions = [];
+    const values = [];
+    for (const filter in filters) {
+      const value = filters[filter];
+
+      if (filter === "nameLike") {
+        conditions.push(`name ILIKE $${conditions.length + 1}`);
+        values.push(`%${value}%`);
+      } else if (filter === "minEmployees") {
+        conditions.push(`num_employees >= $${conditions.length + 1}`);
+        values.push(value);
+      } else {
+        // if (filter === "maxEmployees")
+        conditions.push(`num_employees <= $${conditions.length + 1}`);
+        values.push(value);
+      }
+    }
+
+    const sqlCmd = "WHERE " + conditions.join(" AND ");
+
+    return {
+      sqlCmd,
+      values,
+    };
   }
 }
 

@@ -54,38 +54,3 @@ describe("sqlForPartialUpdate", function () {
     }
   });
 });
-
-describe("formatWhereCmds", function () {
-  test("works: returns valid object with all 3 filter parameters", function () {
-    const results = formatWhereCmds({
-      nameLike: "test",
-      minEmployees: 1,
-      maxEmployees: 2,
-    });
-
-    expect(results).toEqual({
-      sqlCmd: "name ILIKE $1 AND num_employees >= $2 AND num_employees <= $3",
-      values: ["%test%", 1, 2],
-    });
-  });
-
-  test("works: returns valid object with 1 filter parameter", function () {
-    const results = formatWhereCmds({
-      maxEmployees: 2,
-    });
-
-    expect(results).toEqual({
-      sqlCmd: "num_employees <= $1",
-      values: [2],
-    });
-  });
-
-  test("returns empty array for values and empty string for sqlCmds", function () {
-    const results = formatWhereCmds({});
-
-    expect(results).toEqual({
-      sqlCmd: "",
-      values: [],
-    });
-  });
-});

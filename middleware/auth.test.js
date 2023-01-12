@@ -5,7 +5,7 @@ const { UnauthorizedError } = require("../expressError");
 const {
   authenticateJWT,
   ensureLoggedIn,
-  ensureAdminLoggedIn,
+  ensureAdmin,
   ensureCurrUserOrAdmin,
 } = require("./auth");
 
@@ -60,17 +60,23 @@ describe("ensureLoggedIn", function () {
   });
 });
 
-describe("ensureAdminLoggedIn", function () {
+describe("ensureAdmin", function () {
   test("works", function () {
     const req = {};
     const res = { locals: { user: { username: "test", isAdmin: true } } };
-    ensureAdminLoggedIn(req, res, next);
+    ensureAdmin(req, res, next);
   });
 
   test("unauth if not admin", function () {
     const req = {};
     const res = { locals: { user: { username: "test" } } };
-    expect(() => ensureAdminLoggedIn(req, res, next)).toThrowError();
+    expect(() => ensureAdmin(req, res, next)).toThrowError();
+  });
+
+  test("unauth if no login", function () {
+    const req = {};
+    const res = { locals: {} };
+    expect(() => ensureAdmin(req, res, next)).toThrowError();
   });
 });
 
@@ -83,13 +89,19 @@ describe("ensureCurrUserOrAdmin", function () {
 
   test("works for admin", function () {
     const req = { params: { username: "test2" } };
-    const res = { locals: { user: { username: "test2", isAdmin: true } } };
+    const res = { locals: { user: { username: "test1", isAdmin: true } } };
     ensureCurrUserOrAdmin(req, res, next);
   });
 
   test("unauth if not current user", function () {
     const req = { params: { username: "test3" } };
     const res = { locals: { user: { username: "test1" } } };
+    expect(() => ensureCurrUserOrAdmin(req, res, next)).toThrowError();
+  });
+
+  test("unauth if no login", function () {
+    const req = { params: { username: "test1" } };
+    const res = { locals: {} };
     expect(() => ensureCurrUserOrAdmin(req, res, next)).toThrowError();
   });
 });

@@ -267,3 +267,41 @@ describe("remove", function () {
     }
   });
 });
+
+/************************************** formatWhereCmds */
+
+describe("formatWhereCmds", function () {
+  test("works: returns valid object with all 3 filter parameters", function () {
+    const results = Company.formatWhereCmds({
+      nameLike: "test",
+      minEmployees: 1,
+      maxEmployees: 2,
+    });
+
+    expect(results).toEqual({
+      sqlCmd:
+        "WHERE name ILIKE $1 AND num_employees >= $2 AND num_employees <= $3",
+      values: ["%test%", 1, 2],
+    });
+  });
+
+  test("works: returns valid object with 1 filter parameter", function () {
+    const results = Company.formatWhereCmds({
+      maxEmployees: 2,
+    });
+
+    expect(results).toEqual({
+      sqlCmd: "WHERE num_employees <= $1",
+      values: [2],
+    });
+  });
+
+  test("returns empty array for values and empty string for sqlCmds", function () {
+    const results = Company.formatWhereCmds({});
+
+    expect(results).toEqual({
+      sqlCmd: null,
+      values: null,
+    });
+  });
+});

@@ -41,7 +41,8 @@ function ensureLoggedIn(req, res, next) {
  *
  * If not, raises Unauthorized.
  */
-function ensureAdminLoggedIn(req, res, next) {
+
+function ensureAdmin(req, res, next) {
   const user = res.locals.user;
   if (!user || !user.isAdmin) throw new UnauthorizedError();
   return next();
@@ -54,12 +55,12 @@ function ensureAdminLoggedIn(req, res, next) {
  */
 function ensureCurrUserOrAdmin(req, res, next) {
   const user = res.locals.user;
-
+  // consider putting the conditions into variables - easier to work with in 1 line
   if (!user) throw new UnauthorizedError();
   if (!user.isAdmin && user.username !== req.params.username)
     throw new UnauthorizedError();
 
-  // FIXME: worth writing 1 liner? took me awhile to write it
+  // worth writing 1 liner? took me awhile to write it
   // if (!user || (!user.isAdmin && user.username !== req.params.username))
   //   throw new UnauthorizedError();
 
@@ -69,6 +70,6 @@ function ensureCurrUserOrAdmin(req, res, next) {
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
-  ensureAdminLoggedIn,
+  ensureAdmin,
   ensureCurrUserOrAdmin,
 };
