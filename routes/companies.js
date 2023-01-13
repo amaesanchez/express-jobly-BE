@@ -59,7 +59,7 @@ router.get("/", async function (req, res, next) {
   }
 
   const validator = jsonschema.validate(lintedQuery, companyFilter, {
-    require: true,
+    required: true,
   });
 
   if (!validator.valid) {

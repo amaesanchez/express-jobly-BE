@@ -1,13 +1,8 @@
 "use strict";
 
 const db = require("../db");
-const bcrypt = require("bcrypt");
 const { sqlForPartialUpdate } = require("../helpers/sql");
-const {
-  NotFoundError,
-  BadRequestError,
-  UnauthorizedError,
-} = require("../expressError");
+const { NotFoundError } = require("../expressError");
 
 class Job {
   /** Create a job (from data), update db, return new job data.
@@ -38,9 +33,9 @@ class Job {
   /** Find all jobs. Can be provided optional filtering parameters
    * (title, minSalary, hasEquity).
    *
-   * Returns [{ id, title, salary, equity, company_handle }, ...]
+   * Returns [{ id, title, salary, equity, company_handle, companyName }, ...]
    * */
-
+  // FIXME: send back the company name too
   static async findAll(filters) {
     const { sqlCmd, values } = this.formatWhereCmds(filters);
 
@@ -62,11 +57,11 @@ class Job {
 
   /** Given a job id, return data about job.
    *
-   * Returns { id, title, salary, equity, company_handle }
+   * Returns { id, title, salary, equity, company_handle, {company} }
    *
    * Throws NotFoundError if not found.
    **/
-
+  // FIXME: add the company object but remove the company_handle key inside of it
   static async get(id) {
     const jobRes = await db.query(
       `SELECT id,
@@ -91,7 +86,7 @@ class Job {
    * This is a "partial update" --- it's fine if data doesn't contain all the
    * fields; this only changes provided ones.
    *
-   * Data can include: {title, salary, equity, companyHandle}
+   * Data can include: {title, salary, equity, FIXME: companyHandle}
    *
    * Returns {id, title, salary, equity, companyHandle}
    *
@@ -99,16 +94,13 @@ class Job {
    */
 
   static async update(id, data) {
-    const { setCols, values } = sqlForPartialUpdate(data, {
-      companyHandle: "company_handle",
-    });
+    const { setCols, values } = sqlForPartialUpdate(data, {});
     const idVarIdx = "$" + (values.length + 1);
-
     const querySql = `
       UPDATE jobs
       SET ${setCols}
         WHERE id = ${idVarIdx}
-        RETURNING id, title, salary, equity, company_handle AS "companyHandle`;
+        RETURNING id, title, salary, equity, company_handle AS "companyHandle"`;
     const result = await db.query(querySql, [...values, id]);
     const job = result.rows[0];
 
@@ -149,7 +141,11 @@ class Job {
    * */
 
   static formatWhereCmds(filters) {
-    if (Object.keys(filters).length === 0)
+    if (
+      Object.keys(filters).length === 1 &&
+      Object.keys(filters).includes("hasEquity") &&
+      filters.hasEquity !== true
+    )
       return {
         sqlCmd: null,
         values: null,
@@ -157,6 +153,7 @@ class Job {
 
     const conditions = [];
     const values = [];
+    // FIXME: don't need the for loop
     for (const filter in filters) {
       const value = filters[filter];
 

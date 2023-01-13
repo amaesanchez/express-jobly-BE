@@ -6,12 +6,13 @@ const db = require("../db.js");
 const { BCRYPT_WORK_FACTOR } = require("../config");
 
 let testJobIds = {};
+
 async function commonBeforeAll() {
   // noinspection SqlWithoutWhere
   await db.query("DELETE FROM companies");
   // noinspection SqlWithoutWhere
   await db.query("DELETE FROM users");
-
+  // noinspection SqlWithoutWhere
   await db.query("DELETE FROM jobs");
 
   await db.query(`
@@ -20,7 +21,8 @@ async function commonBeforeAll() {
            ('c2', 'C2', 2, 'Desc2', 'http://c2.img'),
            ('c3', 'C3', 3, 'Desc3', 'http://c3.img')`);
 
-  await db.query(`
+  await db.query(
+    `
         INSERT INTO users(username,
                           password,
                           first_name,
@@ -29,10 +31,11 @@ async function commonBeforeAll() {
         VALUES ('u1', $1, 'U1F', 'U1L', 'u1@email.com'),
                ('u2', $2, 'U2F', 'U2L', 'u2@email.com')
         RETURNING username`,
-      [
-        await bcrypt.hash("password1", BCRYPT_WORK_FACTOR),
-        await bcrypt.hash("password2", BCRYPT_WORK_FACTOR),
-      ]);
+    [
+      await bcrypt.hash("password1", BCRYPT_WORK_FACTOR),
+      await bcrypt.hash("password2", BCRYPT_WORK_FACTOR),
+    ]
+  );
 
   const jResults = await db.query(`
         INSERT INTO jobs(title,
@@ -41,10 +44,9 @@ async function commonBeforeAll() {
                           company_handle)
         VALUES ('j1', 100000, 0.003, 'c1'),
                ('j2', 200000, '0.004', 'c2')
-        RETURNING id`
-        );
-  testJobIds.j1Id = jResults.rows[0].id
-  testJobIds.j2Id = jResults.rows[1].id
+        RETURNING id`);
+  testJobIds.j1Id = jResults.rows[0].id;
+  testJobIds.j2Id = jResults.rows[1].id;
 }
 
 async function commonBeforeEach() {
@@ -64,5 +66,5 @@ module.exports = {
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
-  testJobIds
+  testJobIds,
 };

@@ -7,6 +7,7 @@ const {
 } = require("../expressError");
 const db = require("../db.js");
 const User = require("./user.js");
+
 const {
   commonBeforeAll,
   commonBeforeEach,
@@ -227,3 +228,5 @@ describe("remove", function () {
     }
   });
 });
+
+/************************************** applyForJob */

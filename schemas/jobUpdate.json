@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://our.company.com/jobUpdate.schema.json",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 30
+    },
+    "salary": {
+      "type": "integer",
+      "exclusiveMinimum": 0
+    },
+    "equity": {
+      "type": "string"
+    },
+    "companyHandle": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 30
+    }
+  },
+  "additionalProperties": false,
+  "required": []
+}

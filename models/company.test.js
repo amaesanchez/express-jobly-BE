@@ -1,13 +1,15 @@
 "use strict";
 
-const db = require("../db.js");
 const { BadRequestError, NotFoundError } = require("../expressError");
+const db = require("../db.js");
 const Company = require("./company.js");
+
 const {
   commonBeforeAll,
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
+  testJobIds,
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -145,6 +147,7 @@ describe("findAll", function () {
 
 describe("get", function () {
   test("works", async function () {
+    const { j1Id } = testJobIds;
     let company = await Company.get("c1");
     expect(company).toEqual({
       handle: "c1",
@@ -152,6 +155,27 @@ describe("get", function () {
       description: "Desc1",
       numEmployees: 1,
       logoUrl: "http://c1.img",
+      jobs: [
+        {
+          id: j1Id,
+          title: "j1",
+          salary: 100000,
+          equity: "0.003",
+          companyHandle: "c1",
+        },
+      ],
+    });
+  });
+
+  test("works", async function () {
+    let company = await Company.get("c3");
+    expect(company).toEqual({
+      handle: "c3",
+      name: "C3",
+      description: "Desc3",
+      numEmployees: 3,
+      logoUrl: "http://c3.img",
+      jobs: [],
     });
   });
 

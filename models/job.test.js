@@ -1,20 +1,16 @@
 "use strict";
 
-const {
-  NotFoundError,
-  BadRequestError,
-  UnauthorizedError,
-} = require("../expressError");
+const { NotFoundError, BadRequestError } = require("../expressError");
 const db = require("../db.js");
-const Job = require("./jobs");
+const Job = require("./job");
+
 const {
   commonBeforeAll,
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
-  testJobIds
+  testJobIds,
 } = require("./_testCommon");
-const { update } = require("./company");
 
 beforeAll(commonBeforeAll);
 beforeEach(commonBeforeEach);
@@ -31,7 +27,6 @@ describe("create job", function () {
     companyHandle: "c3",
   };
 
-
   test("works", async function () {
     let job = await Job.create(newJob);
     newJob.id = job.id;
@@ -45,7 +40,7 @@ describe("create job", function () {
     );
     expect(result.rows).toEqual([
       {
-        id: expect.any(Number),
+        id: job.id,
         title: "j3",
         salary: 300000,
         equity: "0.005",
@@ -59,7 +54,8 @@ describe("create job", function () {
 
 describe("findAll", function () {
   test("works: no filter", async function () {
-    let jobs = await Job.findAll({});
+    // TODO: utilize the imported object with job ids
+    let jobs = await Job.findAll({ hasEquity: false });
     expect(jobs).toEqual([
       {
         id: expect.any(Number),
@@ -120,7 +116,7 @@ describe("get", function () {
     const { j1Id } = testJobIds;
     let job = await Job.get(j1Id);
     expect(job).toEqual({
-      id: expect.any(Number),
+      id: j1Id,
       title: "j1",
       salary: 100000,
       equity: "0.003",
@@ -130,10 +126,9 @@ describe("get", function () {
 
   test("not found if no such job", async function () {
     try {
-      await Job.get("nope");
+      await Job.get(0);
       throw new Error("fail test, you shouldn't get here");
     } catch (err) {
-      console.log(err)
       expect(err instanceof NotFoundError).toBeTruthy();
     }
   });
@@ -146,6 +141,7 @@ describe("update", function () {
     title: "j4",
     salary: 100001,
     equity: "0.001",
+    // FIXME: remove this later
     companyHandle: "c2",
   };
 
@@ -160,7 +156,8 @@ describe("update", function () {
     const result = await db.query(
       `SELECT id, title, salary, equity, company_handle
            FROM jobs
-           WHERE id = $1`, [j1Id]
+           WHERE id = $1`,
+      [j1Id]
     );
 
     expect(result.rows).toEqual([
@@ -174,10 +171,11 @@ describe("update", function () {
     ]);
   });
 
-  test("works: null fields", async function () {
+  test("works: missing optional fields", async function () {
     const { j1Id } = testJobIds;
     const updateDataSetNulls = {
       title: "j1",
+      // FIXME: remove these 2 and make it work still
       salary: null,
       equity: null,
       companyHandle: "c1",
@@ -192,7 +190,8 @@ describe("update", function () {
     const result = await db.query(
       `SELECT id, title, salary, equity, company_handle
            FROM jobs
-           WHERE id = $1`, [j1Id]
+           WHERE id = $1`,
+      [j1Id]
     );
     expect(result.rows).toEqual([
       {
@@ -207,7 +206,7 @@ describe("update", function () {
 
   test("not found if no such job", async function () {
     try {
-      await Job.update("nope", updateData);
+      await Job.update(0, updateData);
       throw new Error("fail test, you shouldn't get here");
     } catch (err) {
       expect(err instanceof NotFoundError).toBeTruthy();
@@ -231,15 +230,15 @@ describe("remove", function () {
   test("works", async function () {
     const { j1Id } = testJobIds;
     await Job.remove(j1Id);
-    const res = await db.query(
-      `SELECT id, title FROM jobs WHERE id= $1`, [j1Id]
-    );
+    const res = await db.query(`SELECT id, title FROM jobs WHERE id= $1`, [
+      j1Id,
+    ]);
     expect(res.rows.length).toEqual(0);
   });
 
   test("not found if no such job", async function () {
     try {
-      await Job.remove("nope");
+      await Job.remove(0);
       throw new Error("fail test, you shouldn't get here");
     } catch (err) {
       expect(err instanceof NotFoundError).toBeTruthy();
@@ -254,13 +253,25 @@ describe("formatWhereCmds - jobs", function () {
     const results = Job.formatWhereCmds({
       title: "test",
       minSalary: 1,
-      hasEquity: true
+      hasEquity: true,
     });
 
     expect(results).toEqual({
-      sqlCmd:
-        "WHERE title ILIKE $1 AND salary >= $2 AND equity > $3",
+      sqlCmd: "WHERE title ILIKE $1 AND salary >= $2 AND equity > $3",
       values: ["%test%", 1, 0],
+    });
+  });
+
+  test("works: returns valid object with minEquity set to false", function () {
+    const results = Job.formatWhereCmds({
+      title: "test",
+      minSalary: 1,
+      hasEquity: false,
+    });
+
+    expect(results).toEqual({
+      sqlCmd: "WHERE title ILIKE $1 AND salary >= $2",
+      values: ["%test%", 1],
     });
   });
 
@@ -276,7 +287,7 @@ describe("formatWhereCmds - jobs", function () {
   });
 
   test("returns empty array for values and empty string for sqlCmds", function () {
-    const results = Job.formatWhereCmds({});
+    const results = Job.formatWhereCmds({ hasEquity: false });
 
     expect(results).toEqual({
       sqlCmd: null,
