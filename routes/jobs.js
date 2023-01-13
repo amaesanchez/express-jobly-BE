@@ -40,8 +40,7 @@ router.post("/", ensureAdmin, async function (req, res, next) {
 });
 
 /** GET /  =>
- * // FIXME: include the company name in the docstring
- *   { jobs: [ { id, title, salary, equity, companyHandle }, ...] }
+ *   { jobs: [ { id, title, salary, equity, companyHandle, companyName}, ...] }
  *
  * Can filter on provided search filters:
  * - minSalary (at least 0)
@@ -59,6 +58,7 @@ router.get("/", async function (req, res, next) {
   }
 
   lintedQuery.hasEquity = lintedQuery.hasEquity === "true";
+  if (lintedQuery.hasEquity === false) delete lintedQuery.hasEquity;
 
   const validator = jsonschema.validate(
     lintedQuery,
@@ -76,8 +76,8 @@ router.get("/", async function (req, res, next) {
 });
 
 /** GET /[id]  =>  { job }
- *  // FIXME: include { company } (remove companyHandle key in it)
- *  Job is { id, title, salary, equity, companyHandle }
+ *  Job is { id, title, salary, equity, companyHandle, { company } }
+ *    - company is { name, numEmployees, description, logoUrl }
  *
  * Authorization required: none
  */
@@ -87,16 +87,13 @@ router.get("/:id", async function (req, res, next) {
   return res.json({ job });
 });
 
-// TODO: Does it make sense to change the company associated with a job?
-// FIXME: spoilers: it doesn't. remove it
-
 /** PATCH /[id] { fld1, fld2, ... } => { job }
  *
  * Patches job data.
  *
- * fields can be: { title, salary, equity, companyHandle }
+ * fields can be: { title, salary, equity }
  *
- * Returns { id, title, salary, equity, companyHandle }
+ * Returns { id, title, salary, equity }
  *
  * Authorization required: admin
  */
@@ -118,10 +115,9 @@ router.patch("/:id", ensureAdmin, async function (req, res, next) {
  *
  * Authorization: admin
  */
-// FIXME: consider coercing req.params.id to number, change test too
 router.delete("/:id", ensureAdmin, async function (req, res, next) {
   await Job.remove(req.params.id);
-  return res.json({ deleted: req.params.id });
+  return res.json({ deleted: +req.params.id });
 });
 
 module.exports = router;

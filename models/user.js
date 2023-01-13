@@ -218,16 +218,18 @@ class User {
   /** Apply for a job */
 
   static async applyForJob(username, id) {
-    const result = await db.query(
-      `INSERT INTO applications (username, job_id)
-      VALUES ($1, $2)
-      RETURNING job_id`,
-      [username, id]
-    );
+    let result;
 
-    if (!result) throw new NotFoundError();
-
-    console.log("🚀 ~ file: user.js:214 ~ User ~ applyForJob ~ result", result);
+    try {
+      result = await db.query(
+        `INSERT INTO applications (username, job_id)
+        VALUES ($1, $2)
+        RETURNING job_id`,
+        [username, id]
+      );
+    } catch (err) {
+      throw new NotFoundError();
+    }
 
     return result.rows[0];
   }

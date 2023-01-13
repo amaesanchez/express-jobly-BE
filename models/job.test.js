@@ -54,27 +54,30 @@ describe("create job", function () {
 
 describe("findAll", function () {
   test("works: no filter", async function () {
-    // TODO: utilize the imported object with job ids
-    let jobs = await Job.findAll({ hasEquity: false });
+    const { j1Id, j2Id } = testJobIds;
+    let jobs = await Job.findAll({});
     expect(jobs).toEqual([
       {
-        id: expect.any(Number),
+        id: j1Id,
         title: "j1",
         salary: 100000,
         equity: "0.003",
         companyHandle: "c1",
+        companyName: "C1"
       },
       {
-        id: expect.any(Number),
+        id: j2Id,
         title: "j2",
         salary: 200000,
         equity: "0.004",
         companyHandle: "c2",
+        companyName: "C2"
       },
     ]);
   });
 
   test("works: with filter for all 3 params", async function () {
+    const { j1Id } = testJobIds;
     let jobs = await Job.findAll({
       title: "j1",
       minSalary: 100000,
@@ -83,27 +86,54 @@ describe("findAll", function () {
 
     expect(jobs).toEqual([
       {
-        id: expect.any(Number),
+        id: j1Id,
         title: "j1",
         salary: 100000,
         equity: "0.003",
         companyHandle: "c1",
+        companyName: "C1"
       },
     ]);
   });
 
   test("works: with filter for 1 param", async function () {
+    const { j2Id } = testJobIds;
     let jobs = await Job.findAll({
       title: "2",
     });
 
     expect(jobs).toEqual([
       {
-        id: expect.any(Number),
+        id: j2Id,
         title: "j2",
         salary: 200000,
         equity: "0.004",
         companyHandle: "c2",
+        companyName: "C2"
+      },
+    ]);
+  });
+
+  test("works: with no filters", async function () {
+    const { j1Id, j2Id } = testJobIds;
+    let jobs = await Job.findAll({});
+
+    expect(jobs).toEqual([
+      {
+        id: j1Id,
+        title: "j1",
+        salary: 100000,
+        equity: "0.003",
+        companyHandle: "c1",
+        companyName: "C1"
+      },
+      {
+        id: j2Id,
+        title: "j2",
+        salary: 200000,
+        equity: "0.004",
+        companyHandle: "c2",
+        companyName: "C2"
       },
     ]);
   });
@@ -121,6 +151,12 @@ describe("get", function () {
       salary: 100000,
       equity: "0.003",
       companyHandle: "c1",
+      company: {
+        name: "C1",
+        numEmployees: 1,
+        description: 'Desc1',
+        logoUrl: 'http://c1.img'
+      }
     });
   });
 
@@ -140,9 +176,7 @@ describe("update", function () {
   const updateData = {
     title: "j4",
     salary: 100001,
-    equity: "0.001",
-    // FIXME: remove this later
-    companyHandle: "c2",
+    equity: "0.001"
   };
 
   test("works", async function () {
@@ -154,7 +188,7 @@ describe("update", function () {
     });
 
     const result = await db.query(
-      `SELECT id, title, salary, equity, company_handle
+      `SELECT id, title, salary, equity
            FROM jobs
            WHERE id = $1`,
       [j1Id]
@@ -165,8 +199,7 @@ describe("update", function () {
         id: j1Id,
         title: "j4",
         salary: 100001,
-        equity: "0.001",
-        company_handle: "c2",
+        equity: "0.001"
       },
     ]);
   });
@@ -178,7 +211,6 @@ describe("update", function () {
       // FIXME: remove these 2 and make it work still
       salary: null,
       equity: null,
-      companyHandle: "c1",
     };
 
     let job = await Job.update(j1Id, updateDataSetNulls);
@@ -188,7 +220,7 @@ describe("update", function () {
     });
 
     const result = await db.query(
-      `SELECT id, title, salary, equity, company_handle
+      `SELECT id, title, salary, equity
            FROM jobs
            WHERE id = $1`,
       [j1Id]
@@ -199,7 +231,6 @@ describe("update", function () {
         title: "j1",
         salary: null,
         equity: null,
-        company_handle: "c1",
       },
     ]);
   });
@@ -287,7 +318,7 @@ describe("formatWhereCmds - jobs", function () {
   });
 
   test("returns empty array for values and empty string for sqlCmds", function () {
-    const results = Job.formatWhereCmds({ hasEquity: false });
+    const results = Job.formatWhereCmds({});
 
     expect(results).toEqual({
       sqlCmd: null,

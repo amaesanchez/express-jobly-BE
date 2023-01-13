@@ -56,6 +56,19 @@ describe("POST /jobs", function () {
     });
   });
 
+  test("not ok for anon", async function () {
+    const resp = await request(app)
+      .post("/jobs")
+      .send(newJob)
+    expect(resp.statusCode).toEqual(401);
+    expect(resp.body).toEqual({
+      error: {
+        message: "Unauthorized",
+        status: 401,
+      },
+    });
+  });
+
   test("bad request with missing data", async function () {
     const resp = await request(app)
       .post("/jobs")
@@ -77,8 +90,6 @@ describe("POST /jobs", function () {
       .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(400);
   });
-
-  // FIXME: add anon test
 });
 
 /************************************** GET /jobs */
@@ -95,6 +106,7 @@ describe("GET /jobs", function () {
           salary: 10000,
           equity: "0.001",
           companyHandle: "c1",
+          companyName: "C1"
         },
         {
           id: j2Id,
@@ -102,6 +114,7 @@ describe("GET /jobs", function () {
           salary: 20000,
           equity: "0.002",
           companyHandle: "c3",
+          companyName: "C3"
         },
         {
           id: j3Id,
@@ -109,6 +122,7 @@ describe("GET /jobs", function () {
           salary: 30000,
           equity: null,
           companyHandle: "c3",
+          companyName: "C3"
         },
       ],
     });
@@ -130,6 +144,7 @@ describe("GET /jobs", function () {
           salary: 10000,
           equity: "0.001",
           companyHandle: "c1",
+          companyName: "C1"
         },
       ],
     });
@@ -151,6 +166,7 @@ describe("GET /jobs", function () {
           salary: 30000,
           equity: null,
           companyHandle: "c3",
+          companyName: "C3"
         },
       ],
     });
@@ -192,10 +208,16 @@ describe("GET /jobs/:id", function () {
         salary: 10000,
         equity: "0.001",
         companyHandle: "c1",
+        company: {
+          name: "C1",
+          numEmployees: 1,
+          description: 'Desc1',
+          logoUrl: 'http://c1.img'
+        }
       },
     });
   });
-  // FIXME: these will fail - incorporate company information
+
   test("not found for no such job", async function () {
     const resp = await request(app).get(`/job/0`);
     expect(resp.statusCode).toEqual(404);
@@ -218,8 +240,7 @@ describe("PATCH /jobs/:id", function () {
         id: j1Id,
         title: "j1-new",
         salary: 10000,
-        equity: "0.001",
-        companyHandle: "c1",
+        equity: "0.001"
       },
     });
   });
@@ -290,8 +311,7 @@ describe("DELETE /jobs/:id", function () {
     const resp = await request(app)
       .delete(`/jobs/${j1Id}`)
       .set("authorization", `Bearer ${adminToken}`);
-      // FIXME: remove the string coercion after the route changes
-    expect(resp.body).toEqual({ deleted: String(j1Id) });
+    expect(resp.body).toEqual({ deleted: j1Id });
   });
 
   test("doesnt work for users", async function () {

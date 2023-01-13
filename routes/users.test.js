@@ -407,3 +407,18 @@ describe("DELETE /users/:username", function () {
     expect(resp.statusCode).toEqual(404);
   });
 });
+
+
+//for applyForJob
+
+// test("okay for admin: creates application", async function () {
+//   const { j1Id } = testJobIds
+//   const results = await User.applyForJob(u1, j1Id)
+
+//   expect(results).toEqual({ j1Id })
+// });
+
+// test("not okay for unauth", async function () {
+// });
+// test("not okay for different user", async function () {
+// });

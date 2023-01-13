@@ -3,6 +3,7 @@
 const db = require("../db");
 const { sqlForPartialUpdate } = require("../helpers/sql");
 const { NotFoundError } = require("../expressError");
+const { query } = require("express");
 
 class Job {
   /** Create a job (from data), update db, return new job data.
@@ -35,21 +36,23 @@ class Job {
    *
    * Returns [{ id, title, salary, equity, company_handle, companyName }, ...]
    * */
-  // FIXME: send back the company name too
   static async findAll(filters) {
     const { sqlCmd, values } = this.formatWhereCmds(filters);
 
     const querySql = `
-        SELECT id,
-              title,
-              salary,
-              equity,
-              company_handle AS "companyHandle"
-        FROM jobs
+        SELECT j.id,
+              j.title,
+              j.salary,
+              j.equity,
+              j.company_handle AS "companyHandle",
+              c.name AS "companyName"
+        FROM jobs AS j
+          JOIN companies AS c
+          ON c.handle = j.company_handle
         ${sqlCmd ? sqlCmd : ""}
         ORDER BY title
     `;
-
+    console.log("querySql", querySql)
     const jobsRes = await db.query(querySql, values);
 
     return jobsRes.rows;
@@ -61,7 +64,7 @@ class Job {
    *
    * Throws NotFoundError if not found.
    **/
-  // FIXME: add the company object but remove the company_handle key inside of it
+
   static async get(id) {
     const jobRes = await db.query(
       `SELECT id,
@@ -78,6 +81,20 @@ class Job {
 
     if (!job) throw new NotFoundError(`No job found at id: ${id}`);
 
+    const handle = job.companyHandle;
+
+    const companyRes = await db.query(
+      `SELECT name,
+              num_employees AS "numEmployees",
+              description,
+              logo_url AS "logoUrl"
+        FROM companies
+        WHERE handle = $1
+      `, [handle]
+    )
+
+    job.company = companyRes.rows[0];
+
     return job;
   }
 
@@ -86,9 +103,9 @@ class Job {
    * This is a "partial update" --- it's fine if data doesn't contain all the
    * fields; this only changes provided ones.
    *
-   * Data can include: {title, salary, equity, FIXME: companyHandle}
+   * Data can include: {title, salary, equity }
    *
-   * Returns {id, title, salary, equity, companyHandle}
+   * Returns {id, title, salary, equity }
    *
    * Throws NotFoundError if not found.
    */
@@ -100,7 +117,7 @@ class Job {
       UPDATE jobs
       SET ${setCols}
         WHERE id = ${idVarIdx}
-        RETURNING id, title, salary, equity, company_handle AS "companyHandle"`;
+        RETURNING id, title, salary, equity`;
     const result = await db.query(querySql, [...values, id]);
     const job = result.rows[0];
 
@@ -141,11 +158,7 @@ class Job {
    * */
 
   static formatWhereCmds(filters) {
-    if (
-      Object.keys(filters).length === 1 &&
-      Object.keys(filters).includes("hasEquity") &&
-      filters.hasEquity !== true
-    )
+    if (Object.keys(filters).length === 0)
       return {
         sqlCmd: null,
         values: null,
@@ -153,22 +166,18 @@ class Job {
 
     const conditions = [];
     const values = [];
-    // FIXME: don't need the for loop
-    for (const filter in filters) {
-      const value = filters[filter];
 
-      if (filter === "title") {
-        conditions.push(`title ILIKE $${conditions.length + 1}`);
-        values.push(`%${value}%`);
-      } else if (filter === "minSalary") {
-        conditions.push(`salary >= $${conditions.length + 1}`);
-        values.push(value);
-      } else {
-        if (value === true) {
-          conditions.push(`equity > $${conditions.length + 1}`);
-          values.push(0);
-        }
-      }
+    if (filters.title) {
+      conditions.push(`title ILIKE $${conditions.length + 1}`);
+      values.push(`%${filters.title}%`);
+    }
+    if (filters.minSalary) {
+      conditions.push(`salary >= $${conditions.length + 1}`);
+      values.push(filters.minSalary);
+    }
+    if (filters.hasEquity) {
+      conditions.push(`equity > $${conditions.length + 1}`);
+      values.push(0);
     }
 
     const sqlCmd = "WHERE " + conditions.join(" AND ");
