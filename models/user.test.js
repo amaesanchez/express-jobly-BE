@@ -134,7 +134,7 @@ describe("findAll", function () {
 /************************************** get */
 
 describe("get", function () {
-  test("works", async function () {
+  test("works - for user with no job apps", async function () {
     let user = await User.get("u1");
     expect(user).toEqual({
       username: "u1",
@@ -144,6 +144,19 @@ describe("get", function () {
       isAdmin: false,
     });
   });
+
+  test("works - for user with job apps", async function () {
+    const { j1Id } = testJobIds
+    let user = await User.get("u2");
+    expect(user).toEqual({
+      username: "u2",
+      firstName: "U2F",
+      lastName: "U2L",
+      email: "u2@email.com",
+      isAdmin: false,
+      jobs: [ j1Id ]
+    });
+  })
 
   test("not found if no such user", async function () {
     try {
@@ -244,7 +257,7 @@ describe("applyForJob", function () {
   test("not found if no such user or jobId", async function () {
     const { j1Id } = testJobIds;
     try {
-      await User.applyForJob("u1", 0)
+      await User.applyForJob("not-a-user", j1Id)
       throw new Error("fail test, you shouldn't get here");
     } catch (err) {
       console.log("applyforjob", err)

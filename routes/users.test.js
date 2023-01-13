@@ -12,7 +12,9 @@ const {
   commonAfterEach,
   commonAfterAll,
   u1Token,
+  u2Token,
   adminToken,
+  testJobIds,
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -167,7 +169,7 @@ describe("GET /users", function () {
           lastName: "U3L",
           email: "user3@user.com",
           isAdmin: false,
-        }
+        },
       ],
     });
   });
@@ -251,7 +253,6 @@ describe("GET /users/:username", function () {
   test("unauth for anon", async function () {
     const resp = await request(app).get(`/users/u1`);
     expect(resp.statusCode).toEqual(401);
-
   });
 
   test("not found if user not found", async function () {
@@ -398,6 +399,12 @@ describe("DELETE /users/:username", function () {
   test("unauth for anon", async function () {
     const resp = await request(app).delete(`/users/u1`);
     expect(resp.statusCode).toEqual(401);
+    expect(resp.body).toEqual({
+      error: {
+        message: "Unauthorized",
+        status: 401,
+      },
+    });
   });
 
   test("not found if user missing", async function () {
@@ -408,17 +415,51 @@ describe("DELETE /users/:username", function () {
   });
 });
 
+/************************************** POST /users/:username/jobs/:id */
 
-//for applyForJob
+describe("POST /users/:username/jobs/:id", function () {
+  test("okay for users: creates application", async function () {
+    const { j1Id } = testJobIds;
+    const resp = await request(app)
+      .post(`/users/u1/jobs/${j1Id}`)
+      .set("authorization", `Bearer ${u1Token}`);
 
-// test("okay for admin: creates application", async function () {
-//   const { j1Id } = testJobIds
-//   const results = await User.applyForJob(u1, j1Id)
+    expect(resp.body).toEqual({ applied: j1Id });
+  });
 
-//   expect(results).toEqual({ j1Id })
-// });
+  test("okay for admin: creates application", async function () {
+    const { j1Id } = testJobIds;
+    const resp = await request(app)
+      .post(`/users/u1/jobs/${j1Id}`)
+      .set("authorization", `Bearer ${adminToken}`);
 
-// test("not okay for unauth", async function () {
-// });
-// test("not okay for different user", async function () {
-// });
+    expect(resp.body).toEqual({ applied: j1Id });
+  });
+
+  test("not okay for unauth", async function () {
+    const { j1Id } = testJobIds;
+    const resp = await request(app).post(`/users/u1/jobs/${j1Id}`);
+
+    expect(resp.statusCode).toEqual(401);
+    expect(resp.body).toEqual({
+      error: {
+        message: "Unauthorized",
+        status: 401,
+      },
+    });
+  });
+  test("not okay for different user", async function () {
+    const { j1Id } = testJobIds;
+    const resp = await request(app)
+      .post(`/users/u1/jobs/${j1Id}`)
+      .set("authorization", `Bearer ${u2Token}`);
+
+    expect(resp.statusCode).toEqual(401);
+    expect(resp.body).toEqual({
+      error: {
+        message: "Unauthorized",
+        status: 401,
+      },
+    });
+  });
+});

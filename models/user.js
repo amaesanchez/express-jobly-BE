@@ -215,7 +215,11 @@ class User {
     if (!user) throw new NotFoundError(`No user: ${username}`);
   }
 
-  /** Apply for a job */
+  /** Creates application record in applications table
+   * given a username and job id
+   *
+   * Returns and object with the job id
+   * */
 
   static async applyForJob(username, id) {
     let result;
