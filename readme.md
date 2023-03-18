@@ -1,7 +1,7 @@
 # Jobly (backend)
 Job application platform with authentication/authorization features.
 
-Deployed on: asanchez-jobly.surge.sh  
+Deployed on: [asanchez-jobly.surge.sh](https://asanchez-jobly.surge.sh)  
 **User: guest  
 Password: password**  
 
