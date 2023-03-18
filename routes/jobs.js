@@ -11,7 +11,7 @@ const Job = require("../models/job");
 
 const jobNewSchema = require("../schemas/jobNew.json");
 const jobUpdateSchema = require("../schemas/jobUpdate.json");
-const jobFilterSchema = require("../schemas/jobFilter.json");
+const jobSearchSchema = require("../schemas/jobSearch.json");
 
 const router = new express.Router();
 
@@ -62,7 +62,7 @@ router.get("/", async function (req, res, next) {
 
   const validator = jsonschema.validate(
     lintedQuery,
-    jobFilterSchema,
+    jobSearchSchema,
     { required: true }
   );
 

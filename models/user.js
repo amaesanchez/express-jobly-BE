@@ -145,9 +145,7 @@ class User {
       [username]
     );
 
-    const jobIds = jobsRes.rows.map((r) => r.job_id);
-
-    if (jobIds.length > 0) user.jobs = jobIds;
+    user.jobs = jobsRes.rows.map((r) => r.job_id) || [];
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
 
@@ -222,6 +220,22 @@ class User {
    * */
 
   static async applyForJob(username, id) {
+    const preCheck = await db.query(
+      `SELECT id
+      FROM jobs
+      WHERE id = $1`, [id]);
+    const job = preCheck.rows[0];
+
+    if (!job) throw new NotFoundError(`No job: ${id}`);
+
+    const preCheck2 = await db.query(
+      `SELECT username
+      FROM users
+      WHERE username = $1`, [username]);
+    const user = preCheck2.rows[0];
+
+    if (!user) throw new NotFoundError(`No username: ${username}`);
+
     let result;
 
     try {

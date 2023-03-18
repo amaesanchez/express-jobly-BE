@@ -11,7 +11,7 @@ const Company = require("../models/company");
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
-const companyFilter = require("../schemas/companyFilter.json");
+const companySearch = require("../schemas/companySearch.json");
 
 const router = new express.Router();
 
@@ -58,7 +58,7 @@ router.get("/", async function (req, res, next) {
     lintedQuery.maxEmployees = Number(lintedQuery.maxEmployees);
   }
 
-  const validator = jsonschema.validate(lintedQuery, companyFilter, {
+  const validator = jsonschema.validate(lintedQuery, companySearch, {
     required: true,
   });
 

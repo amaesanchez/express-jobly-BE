@@ -1,18 +1,19 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "http://our.company.com/jobFilter.schema.json",
+  "$id": "http://our.company.com/companySearch.schema.json",
   "type": "object",
   "properties": {
-    "title": {
+    "nameLike": {
       "type": "string",
       "minLength": 1
     },
-    "minSalary": {
+    "minEmployees": {
       "type": "integer",
-      "exclusiveMinimum": 0
+      "minimum": 1
     },
-    "hasEquity": {
-      "type": "boolean"
+    "maxEmployees": {
+      "type": "integer",
+      "minimum": 1
     }
   },
   "additionalProperties": false,
