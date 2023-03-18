@@ -1,11 +1,31 @@
-# Jobly Backend
+# Jobly (backend)
+Job application platform with authentication/authorization features.
 
-This is the Express backend for Jobly, version 2.
+Deployed on: asanchez-jobly.surge.sh  
+**User: guest  
+Password: password**  
 
-To run this:
+*Please be patient on load
 
-    node server.js
+To access backend codebase: https://github.com/amaesanchez/react-jobly-frontend.git
+
+## Local Setup
+
+1. Seed `jobly` and `jobly_test` databases in PostgreSQL.
+
+    ```
+    psql -f jobly.sql
+    ```
     
-To run the tests:
+2. Install dependencies and run app.
 
-    jest -i
+    ```
+    npm install
+    npm start
+    ```
+    
+Will be running on localhost:3001.
+
+## TODO
+- [ ] Implement more detailed dashboard for tracking applications
+- [ ] Add tests
