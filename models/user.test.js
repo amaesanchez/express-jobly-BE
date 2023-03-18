@@ -142,6 +142,7 @@ describe("get", function () {
       lastName: "U1L",
       email: "u1@email.com",
       isAdmin: false,
+      jobs: []
     });
   });
 
@@ -163,6 +164,7 @@ describe("get", function () {
       await User.get("nope");
       throw new Error("fail test, you shouldn't get here");
     } catch (err) {
+      console.log("job apps", err)
       expect(err instanceof NotFoundError).toBeTruthy();
     }
   });
