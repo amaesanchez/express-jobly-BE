@@ -26,6 +26,13 @@ To access backend codebase: https://github.com/amaesanchez/react-jobly-frontend.
     
 Will be running on localhost:3001.
 
+## Testing
+99% Test Coverage  
+Run the following in CLI.  
+```
+jest -i
+```
+
 ## TODO
 - [ ] Implement more detailed dashboard for tracking applications
 - [ ] Add tests
