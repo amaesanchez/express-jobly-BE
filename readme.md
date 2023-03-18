@@ -35,4 +35,4 @@ jest -i
 
 ## TODO
 - [ ] Implement more detailed dashboard for tracking applications
-- [ ] Add tests
+- [ ] Add additional tests to hit 100% coverage
