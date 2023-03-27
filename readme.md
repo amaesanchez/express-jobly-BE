@@ -1,5 +1,5 @@
 # Jobly (backend)
-Job application platform with authentication/authorization features.
+RESTful API for job application platform. Built to exercise implementation of authentication/authorization features, while following TDD approach.
 
 Deployed on: [asanchez-jobly.surge.sh](https://asanchez-jobly.surge.sh)  
 **User: guest  
